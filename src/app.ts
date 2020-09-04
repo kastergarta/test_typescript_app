@@ -1,69 +1,35 @@
-// autobind decorator
-function autobind(
-  _: any,
-  _2: string,
-  descriptor: PropertyDescriptor
-) {
-  const originalMethod = descriptor.value;
-  const adjDescriptor: PropertyDescriptor = {
-    configurable: true,
-    get() {
-      const boundFn = originalMethod.bind(this);
-      return boundFn;
-    }
+function Logger(logString: string) {
+  console.log('LOGGER FACTORY');
+  return function(constructor: Function) {
+    console.log(logString);
+    console.log(constructor);
   };
-  return adjDescriptor;
 }
 
-// ProjectInput Class
-class ProjectInput {
-  templateElement: HTMLTemplateElement;
-  hostElement: HTMLDivElement;
-  element: HTMLFormElement;
-  titleInputElement: HTMLInputElement;
-  descriptionInputElement: HTMLInputElement;
-  peopleInputElement: HTMLInputElement;
+function WithTemplate(template: string, hookId: string) {
+  console.log('TEMPLATE FACTORY');
+  return function(constructor: any) {
+    console.log('Rendering template');
+    const hookEl = document.getElementById(hookId);
+    const p = new constructor();
+    if (hookEl) {
+      hookEl.innerHTML = template;
+      hookEl.querySelector('h1')!.textContent = p.name;
+    }
+  }
+}
+
+// @Logger('LOGGING - PERSON')
+@Logger('LOGGING')
+@WithTemplate('<h1>My Person Object</h1>', 'app')
+class Person {
+  name = 'Max';
 
   constructor() {
-    this.templateElement = document.getElementById(
-      'project-input'
-    )! as HTMLTemplateElement;
-    this.hostElement = document.getElementById('app')! as HTMLDivElement;
-
-    const importedNode = document.importNode(
-      this.templateElement.content,
-      true
-    );
-    this.element = importedNode.firstElementChild as HTMLFormElement;
-    this.element.id = 'user-input';
-
-    this.titleInputElement = this.element.querySelector(
-      '#title'
-    ) as HTMLInputElement;
-    this.descriptionInputElement = this.element.querySelector(
-      '#description'
-    ) as HTMLInputElement;
-    this.peopleInputElement = this.element.querySelector(
-      '#people'
-    ) as HTMLInputElement;
-
-    this.configure();
-    this.attach();
-  }
-
-  @autobind
-  private submitHandler(event: Event) {
-    event.preventDefault();
-    console.log(this.titleInputElement.value);
-  }
-
-  private configure() {
-    this.element.addEventListener('submit', this.submitHandler);
-  }
-
-  private attach() {
-    this.hostElement.insertAdjacentElement('afterbegin', this.element);
+    console.log('Creating person object...');
   }
 }
 
-const prjInput = new ProjectInput();
+const pers = new Person();
+
+console.log(pers);
